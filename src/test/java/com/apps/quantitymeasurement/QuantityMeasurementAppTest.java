@@ -2,75 +2,72 @@ package com.apps.quantitymeasurement;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-//importing class to be tested
-import com.apps.quantitymeasurement.QuantityMeasurementApp.Feet;
 
-//import inches class
-import com.apps.quantitymeasurement.QuantityMeasurementApp.Inches;
+//importing class to be tested
+import com.apps.quantitymeasurement.Length.LengthUnit;
 
 public class QuantityMeasurementAppTest {
-	@Test
-	public void testFeetEquality_SameValue()
-	{
-		//Verifies taht two numerical values of 1.0 ft are considered equal.
-		assertEquals(new Feet(1.0), new Feet(1.0));
-		
-	}
-	
-	@Test
-	public void estEquality_DifferentValue()
-	{
-	    // Verifies that two numerical values of 1.0 ft and 2.0 ft are not equal.
-		assertNotEquals(new Feet(1.0), new Feet(2.0));
-	}
-	
-	@Test
-	public void testFeetEquality_NullComparison()
-	{
-		   // Verifies that a numerical value is not equal to null.
-		   assertNotEquals(null, new Feet(1.0));
-	}
-	
-	@Test
-	public void testFeetEquality_DifferentClass()
-	{
-		// Verifies that non-numeric inputs (or different object types) are handled appropriately.
-		assertNotEquals(new Feet(1.0), "1.0");
-	}
-	
-	@Test
-    public void testFeetEquality_SameReference() {
-        // Verifies that a numerical value is equal to itself (reflexive property).
-        Feet feet = new Feet(1.0);
-        assertEquals(feet, feet);
-    }
-	
-	 //Tests for inches
+
+    // Same unit and same value comparison
     @Test
-    public void testInchesEquality_SameValue() {
-    	assertEquals(new Inches(1.0),new Inches(1.0));
-    	
-    }
-    
-    @Test
-    public void testInchesEquality_DifferentVlaue() {
-    	assertNotEquals(new Inches(1.0),new Inches(2.0));
-    }
-    
-    @Test
-    public void testInchesEquality_NullComparison() {
-        assertNotEquals(null, new Inches(1.0));
+    public void testEquality_FeetToFeet_SameValue() {
+        assertEquals(new Length(1.0, LengthUnit.FEET), new Length(1.0, LengthUnit.FEET));
     }
 
     @Test
-    public void testInchesEquality_DifferentClass() {
-        assertNotEquals(new Inches(1.0), "1.0");
+    public void testEquality_InchToInch_SameValue() {
+        assertEquals(new Length(1.0, LengthUnit.INCHES), new Length(1.0, LengthUnit.INCHES));
+    }
+
+    // Cross-unit equivalent comparison
+    @Test
+    public void testEquality_FeetToInch_EquivalentValue() {
+        assertEquals(new Length(1.0, LengthUnit.FEET), new Length(12.0, LengthUnit.INCHES));
     }
 
     @Test
-    public void testInchesEquality_SameReference() {
-        Inches inches = new Inches(1.0);
-        assertEquals(inches, inches);
+    public void testEquality_InchToFeet_EquivalentValue() {
+        assertEquals(new Length(12.0, LengthUnit.INCHES), new Length(1.0, LengthUnit.FEET));
+    }
 
-}
+    // Same unit but different value comparison
+    @Test
+    public void testEquality_FeetToFeet_DifferentValue() {
+        assertNotEquals(new Length(1.0, LengthUnit.FEET), new Length(2.0, LengthUnit.FEET));
+    }
+
+    @Test
+    public void testEquality_InchToInch_DifferentValue() {
+        assertNotEquals(new Length(1.0, LengthUnit.INCHES), new Length(2.0, LengthUnit.INCHES));
+    }
+
+    // Invalid enum handling
+    @Test
+    public void testEquality_InvalidUnit() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            LengthUnit.valueOf("INVALID_UNIT");
+        });
+    }
+
+    // Null unit handling
+    @Test
+    public void testEquality_NullUnit() {
+        Length validLength = new Length(1.0, LengthUnit.FEET);
+        Length invalidLength = new Length(1.0, null);
+
+        assertThrows(NullPointerException.class, () -> {
+            validLength.equals(invalidLength);
+        });
+    }
+
+    @Test
+    public void testEquality_SameReference() {
+        Length length = new Length(1.0, LengthUnit.FEET);
+        assertEquals(length, length);
+    }
+
+    @Test
+    public void testEquality_NullComparison() {
+        assertNotEquals(null, new Length(1.0, LengthUnit.FEET));
+    }
 }
