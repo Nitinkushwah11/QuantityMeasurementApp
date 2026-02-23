@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 //importing class to be tested
 import com.apps.quantitymeasurement.QuantityMeasurementApp.Feet;
 
+//import inches class
+import com.apps.quantitymeasurement.QuantityMeasurementApp.Inches;
+
 public class QuantityMeasurementAppTest {
 	@Test
 	public void testFeetEquality_SameValue()
@@ -42,5 +45,32 @@ public class QuantityMeasurementAppTest {
         assertEquals(feet, feet);
     }
 	
+	 //Tests for inches
+    @Test
+    public void testInchesEquality_SameValue() {
+    	assertEquals(new Inches(1.0),new Inches(1.0));
+    	
+    }
+    
+    @Test
+    public void testInchesEquality_DifferentVlaue() {
+    	assertNotEquals(new Inches(1.0),new Inches(2.0));
+    }
+    
+    @Test
+    public void testInchesEquality_NullComparison() {
+        assertNotEquals(null, new Inches(1.0));
+    }
 
+    @Test
+    public void testInchesEquality_DifferentClass() {
+        assertNotEquals(new Inches(1.0), "1.0");
+    }
+
+    @Test
+    public void testInchesEquality_SameReference() {
+        Inches inches = new Inches(1.0);
+        assertEquals(inches, inches);
+
+}
 }
