@@ -1,5 +1,6 @@
 package com.apps.quantitymeasurement;
-import com.apps.quantitymeasurement.Length.LengthUnit;
+import com.apps.quantitymeasurement.LengthUnit;
+
 /**
  * UC5 - QuantityMeasurementApp - Extended Unit Support with Conversion
  * * <p>Extends UC4 to provide unit-to-unit conversion for values within the same
@@ -102,7 +103,7 @@ public class QuantityMeasurementApp {
      * @param targetUnit the target unit for the result
      * @return a new Length instance representing the sum of the two lengths in the target unit
      */
-    public static Length demonstrateLengthAddition(Length length1, Length length2, Length.LengthUnit targetUnit) {
+    public static Length demonstrateLengthAddition(Length length1, Length length2, LengthUnit targetUnit) {
         
         // 1. Call the new overloaded UC7 add() method from your Length class
         Length sumLength = length1.add(length2, targetUnit);

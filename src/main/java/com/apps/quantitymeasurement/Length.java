@@ -1,6 +1,7 @@
 package com.apps.quantitymeasurement;
 
 
+
 /**
  * A generic class for representing and comparing lengths in different units.
  * * <p>This class encapsulates a length value along with its unit of measurement.
@@ -22,27 +23,7 @@ public class Length {
     private double value;
     private LengthUnit unit;
 
-    /**
-     * Nested enumeration representing different length units and their conversion factors.
-     * The base unit for conversion is inches.
-     */
-    public enum LengthUnit {
-    	FEET(12.0),
-        INCHES(1.0),
-        YARDS(36.0),
-        CENTIMETERS(0.393701);
-
-        private final double conversionFactor;
-
-        LengthUnit(double conversionFactor) {
-            this.conversionFactor = conversionFactor;
-        }
-
-        public double getConversionFactor() {
-            return conversionFactor;
-        }
-        
-    }
+    
 
     public Length(double value, LengthUnit unit) {
         this.value = value;
@@ -54,8 +35,8 @@ public class Length {
      * @return the length value in inches, rounded to two decimal places
      */
     private double convertToBaseUnit() {
-        double rawConvertedValue = this.value * this.unit.getConversionFactor();
-        return Math.round(rawConvertedValue * 100.0) / 100.0;
+       return this.value * this.unit.getConversionFactor();
+         
     }
 
     private boolean compare(Length thatLength) {
@@ -131,7 +112,7 @@ public class Length {
         double totalBaseLength = thisBase + thatBase;
         
         // 4. Convert to the requested target unit
-        double converted = convertFromBaseToTargetUnit(totalBaseLength,targetUnit);
+        double converted = targetUnit.convertFromBaseUnit(totalBaseLength);
         
         // 5. Round to 2 decimal places to match business logic
         converted = Math.round(converted * 100.0) / 100.0;
@@ -156,16 +137,7 @@ public class Length {
     }
     
     
-    //Converting from base to required value
-    /**
-     * Converts a length value from the base unit (inches) to the specified target unit.
-     * * @param lengthInInches the length value in inches to convert
-     * @param targetUnit the unit to convert the length into
-     * @return the converted length value in the target unit
-     */
-    private static double convertFromBaseToTargetUnit(double lengthInInches,LengthUnit targetUnit) {
-    	return (lengthInInches/targetUnit.getConversionFactor());
-    }
+    
     
     
     

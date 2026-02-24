@@ -1,5 +1,6 @@
 package com.apps.quantitymeasurement;
 
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 
 
 //importing class to be tested
-import com.apps.quantitymeasurement.Length.LengthUnit;
+import com.apps.quantitymeasurement.LengthUnit;
 
 /**
  * QuantityMeasurementAppUC6Test
@@ -32,7 +33,7 @@ public class QuantityMeasurementAppTest {
 	
 	@ParameterizedTest(name = "Equality Matrix {index}: {0} {1} should equal {2} {3}")
     @MethodSource("provideLengthsForEqualityMatrix")
-    public void testCrossUnitEqualityMatrix(double val1, Length.LengthUnit unit1, double val2, Length.LengthUnit unit2) {
+    public void testCrossUnitEqualityMatrix(double val1, LengthUnit unit1, double val2, LengthUnit unit2) {
         // 1. Arrange: Create the two lengths based on the arguments handed to us by the Stream
         Length length1 = new Length(val1, unit1);
         Length length2 = new Length(val2, unit2);
@@ -47,9 +48,9 @@ public class QuantityMeasurementAppTest {
        List<Arguments> arguments = new ArrayList<>();
 
         // Loop through EVERY unit for the left side
-        for (Length.LengthUnit unit1 : Length.LengthUnit.values()) {
+        for (LengthUnit unit1 : LengthUnit.values()) {
             // Loop through EVERY unit for the right side
-            for (Length.LengthUnit unit2 : Length.LengthUnit.values()) {
+            for (LengthUnit unit2 : LengthUnit.values()) {
                 
                 double val1 = 1.0; // We always start with 1.0 of the first unit
                 
@@ -219,8 +220,8 @@ public class QuantityMeasurementAppTest {
     
     @ParameterizedTest(name = "Addition {index}: {0} {1} + {2} {3} = {4} {1}")
     @MethodSource("provideDataForAdditionMatrix")
-    public void testCrossUnitAdditionMatrix(double val1, Length.LengthUnit unit1,
-                                            double val2, Length.LengthUnit unit2,
+    public void testCrossUnitAdditionMatrix(double val1, LengthUnit unit1,
+                                            double val2, LengthUnit unit2,
                                             double expectedSumValue) {
 
         // Create input and expected objects
@@ -246,8 +247,8 @@ public class QuantityMeasurementAppTest {
         double val1 = 2.0;
         double val2 = 3.0;
 
-        for (Length.LengthUnit unit1 : Length.LengthUnit.values()) {
-            for (Length.LengthUnit unit2 : Length.LengthUnit.values()) {
+        for (LengthUnit unit1 : LengthUnit.values()) {
+            for (LengthUnit unit2 : LengthUnit.values()) {
 
                 // Convert both values to base unit
                 double totalBaseUnits =
@@ -273,37 +274,37 @@ public class QuantityMeasurementAppTest {
     
     @Test
     public void testAddition_Commutativity() {
-        Length sum1 = QuantityMeasurementApp.demonstrateLengthAddition(new Length(1.0, Length.LengthUnit.FEET), new Length(12.0, Length.LengthUnit.INCHES));
-        Length sum2 = QuantityMeasurementApp.demonstrateLengthAddition(new Length(12.0, Length.LengthUnit.INCHES), new Length(1.0, Length.LengthUnit.FEET));
+        Length sum1 = QuantityMeasurementApp.demonstrateLengthAddition(new Length(1.0, LengthUnit.FEET), new Length(12.0, LengthUnit.INCHES));
+        Length sum2 = QuantityMeasurementApp.demonstrateLengthAddition(new Length(12.0, LengthUnit.INCHES), new Length(1.0, LengthUnit.FEET));
         assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sum1, sum2));
     }
 
     @Test
     public void testAddition_WithZero() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(5.0, Length.LengthUnit.FEET), new Length(0.0, Length.LengthUnit.INCHES));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(5.0, Length.LengthUnit.FEET)));
+        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(5.0, LengthUnit.FEET), new Length(0.0, LengthUnit.INCHES));
+        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(5.0, LengthUnit.FEET)));
     }
 
     @Test
     public void testAddition_NegativeValues() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(5.0, Length.LengthUnit.FEET), new Length(-2.0, Length.LengthUnit.FEET));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(3.0, Length.LengthUnit.FEET)));
+        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(5.0, LengthUnit.FEET), new Length(-2.0, LengthUnit.FEET));
+        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(3.0, LengthUnit.FEET)));
     }
 
     @Test
     public void testAddition_NullSecondOperand() {
-        assertThrows(IllegalArgumentException.class, () -> QuantityMeasurementApp.demonstrateLengthAddition(new Length(1.0, Length.LengthUnit.FEET), null));
+        assertThrows(IllegalArgumentException.class, () -> QuantityMeasurementApp.demonstrateLengthAddition(new Length(1.0, LengthUnit.FEET), null));
     }
 
     @Test
     public void testAddition_LargeValues() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(1e6, Length.LengthUnit.FEET), new Length(1e6, Length.LengthUnit.FEET));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(2e6, Length.LengthUnit.FEET)));
+        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(1e6, LengthUnit.FEET), new Length(1e6, LengthUnit.FEET));
+        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(2e6, LengthUnit.FEET)));
     }
 
     @Test
     public void testAddition_SmallValues() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(0.01, Length.LengthUnit.FEET), new Length(0.02, Length.LengthUnit.FEET));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(0.03, Length.LengthUnit.FEET)));
+        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(0.01, LengthUnit.FEET), new Length(0.02, LengthUnit.FEET));
+        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(0.03, LengthUnit.FEET)));
     }
 }
