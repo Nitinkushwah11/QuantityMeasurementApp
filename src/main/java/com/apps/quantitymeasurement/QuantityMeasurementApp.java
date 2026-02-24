@@ -75,6 +75,24 @@ public class QuantityMeasurementApp {
     }
     
     
+    /**
+     * Demonstrate addition of second QuantityLength to first QuantityLength.
+     *
+     * @param length1 the first QuantityLength instance
+     * @param length2 the second QuantityLength instance
+     *
+     * @return a new QuantityLength instance representing the sum of the two lengths
+     */
+    public static Length demonstrateLengthAddition(Length length1, Length length2) {
+        // Delegate to the core math engine you built in Length.java
+        Length sumLength = length1.add(length2);
+        
+     
+        
+        // Return the object for the test cases to evaluate
+        return sumLength;
+    }
+    
     public static void main(String[] args) {
         System.out.println("--- UC5 Conversion Demonstrations ---\n");
         
