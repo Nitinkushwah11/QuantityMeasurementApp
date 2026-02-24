@@ -87,3 +87,31 @@ This eliminates code duplication and follows the DRY principle.
 👉 [UC-3](https://github.com/Nitinkushwah11/QuantityMeasurementApp/tree/feature/UC3-GenericLength)
 
 ---
+
+# Quantity Measurement – UC4
+
+## Supported Units
+
+* Feet
+* Inch
+* Yard
+* Centimeter
+
+## Features
+
+* Takes input from user
+* Converts units internally
+* Checks if two values are equal
+* Supports cross-unit comparison
+
+## Example
+
+1 Feet = 12 Inch
+3 Feet = 1 Yard
+2.54 Centimeter = 1 Inch
+
+
+🔗 *Code Link:*  
+👉 [UC-4](https://github.com/Nitinkushwah11/QuantityMeasurementApp/tree/feature/UC4-YardEquality)
+
+---
