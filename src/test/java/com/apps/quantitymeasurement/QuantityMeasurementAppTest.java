@@ -348,4 +348,230 @@ public class QuantityMeasurementAppTest {
 
         return args.stream();
     }
+    
+    public void testSubtraction_Immutability() {
+        Quantity<LengthUnit> original = new Quantity<>(10.0, LengthUnit.FEET);
+        original.subtract(new Quantity<>(5.0, LengthUnit.FEET));
+        assertEquals(10.0, original.getValue(), "Subtraction mutated the original object");
+    }
+
+    @Test
+    public void testDivision_Immutability() {
+        Quantity<LengthUnit> original = new Quantity<>(10.0, LengthUnit.FEET);
+        original.divide(new Quantity<>(5.0, LengthUnit.FEET));
+        assertEquals(10.0, original.getValue(), "Division mutated the original object");
+    }
+
+    @Test
+    public void testDivision_PrecisionHandling() {
+        Quantity<LengthUnit> a = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> b = new Quantity<>(3.0, LengthUnit.FEET);
+        double result = a.divide(b);
+        // 10 / 3 = 3.3333333... Ensure no premature rounding
+        assertTrue(result > 3.33 && result < 3.34);
+    }
+
+    
+    // ==========================================
+    // --- EXPLICIT SUBTRACTION & DIVISION TESTS (UC12) ---
+    // ==========================================
+
+    @Test
+    public void testSubtraction_WithZeroOperand() {
+        Quantity<LengthUnit> q1 = new Quantity<>(5.0, LengthUnit.FEET);
+        Quantity<LengthUnit> q2 = new Quantity<>(0.0, LengthUnit.INCHES);
+        Quantity<LengthUnit> diff = q1.subtract(q2);
+        assertEquals(5.0, diff.getValue(), "Subtracting zero should return identity");
+    }
+
+    @Test
+    public void testSubtraction_WithNegativeValues() {
+        Quantity<LengthUnit> q1 = new Quantity<>(5.0, LengthUnit.FEET);
+        Quantity<LengthUnit> q2 = new Quantity<>(-2.0, LengthUnit.FEET);
+        Quantity<LengthUnit> diff = q1.subtract(q2);
+        assertEquals(7.0, diff.getValue(), "5 - (-2) should be 7");
+    }
+
+    @Test
+    public void testSubtraction_NonCommutative() {
+        Quantity<LengthUnit> a = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> b = new Quantity<>(5.0, LengthUnit.FEET);
+        
+        Quantity<LengthUnit> aMinusB = a.subtract(b);
+        Quantity<LengthUnit> bMinusA = b.subtract(a);
+        
+        assertNotEquals(aMinusB.getValue(), bMinusA.getValue(), "Subtraction is not commutative");
+        assertEquals(5.0, aMinusB.getValue());
+        assertEquals(-5.0, bMinusA.getValue());
+    }
+
+    @Test
+    public void testSubtraction_WithLargeValues() {
+        Quantity<WeightUnit> q1 = new Quantity<>(1e6, WeightUnit.KILOGRAM);
+        Quantity<WeightUnit> q2 = new Quantity<>(5e5, WeightUnit.KILOGRAM);
+        assertEquals(5e5, q1.subtract(q2).getValue());
+    }
+
+    @Test
+    public void testSubtraction_WithSmallValues() {
+        Quantity<LengthUnit> q1 = new Quantity<>(0.001, LengthUnit.FEET);
+        Quantity<LengthUnit> q2 = new Quantity<>(0.0005, LengthUnit.FEET);
+        assertEquals(0.0, Math.round(q1.subtract(q2).getValue() * 100.0) / 100.0, "Result is 0.0005, which rounds to 0.00");
+    }
+
+    @Test
+    public void testSubtraction_NullOperand() {
+        assertThrows(IllegalArgumentException.class, () -> new Quantity<>(10.0, LengthUnit.FEET).subtract(null));
+    }
+
+    @Test
+    public void testSubtraction_NullTargetUnit() {
+        assertThrows(IllegalArgumentException.class, () -> new Quantity<>(10.0, LengthUnit.FEET).subtract(new Quantity<>(5.0, LengthUnit.FEET), null));
+    }
+
+    @Test
+    public void testSubtraction_CrossCategory() {
+        Quantity<LengthUnit> feet = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<WeightUnit> kg = new Quantity<>(5.0, WeightUnit.KILOGRAM);
+        assertThrows(IllegalArgumentException.class, () -> feet.subtract((Quantity) kg));
+    }
+
+    @Test
+    public void testSubtraction_ChainedOperations() {
+        Quantity<LengthUnit> result = new Quantity<>(10.0, LengthUnit.FEET)
+                .subtract(new Quantity<>(2.0, LengthUnit.FEET))
+                .subtract(new Quantity<>(1.0, LengthUnit.FEET));
+        assertEquals(7.0, result.getValue());
+    }
+
+    @Test
+    public void testDivision_NonCommutative() {
+        Quantity<LengthUnit> a = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> b = new Quantity<>(5.0, LengthUnit.FEET);
+        assertNotEquals(a.divide(b), b.divide(a), 1e-6);
+        assertEquals(2.0, a.divide(b), 1e-6);
+        assertEquals(0.5, b.divide(a), 1e-6);
+    }
+
+    @Test
+    public void testDivision_ByZero() {
+        // Based on the specific code review earlier, your implementation throws IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(0.0, LengthUnit.FEET)));
+    }
+    
+    
+ // ==========================================
+ // --- UC12 OPERATIONS - AUTOMATED MATRICES (ALL OPERATIONS)  ---
+ // ==========================================
+
+ @ParameterizedTest(name = "Automated Subtraction: {0} {1} - {2} {3} to {4} = {5}")
+ @MethodSource("provideSubtractionData")
+ public <U extends IMeasurable> void testAutomatedSubtractionMatrix(
+         double v1, U u1, double v2, U u2, U target, double expected) {
+
+     Quantity<U> q1 = new Quantity<>(v1, u1);
+     Quantity<U> q2 = new Quantity<>(v2, u2);
+     Quantity<U> result = QuantityMeasurementApp.demonstrateSubtraction(q1, q2, target);
+
+     assertEquals(expected, result.getValue(), 1e-6, "Subtraction matrix failed");
+     assertEquals(target, result.getUnit(), "Target unit mismatch");
+ }
+
+ @ParameterizedTest(name = "Automated Division: {0} {1} / {2} {3} = {4}")
+ @MethodSource("provideDivisionData")
+ public <U extends IMeasurable> void testAutomatedDivisionMatrix(
+         double v1, U u1, double v2, U u2, double expectedRatio) {
+
+     Quantity<U> q1 = new Quantity<>(v1, u1);
+     Quantity<U> q2 = new Quantity<>(v2, u2);
+     double result = QuantityMeasurementApp.demonstrateDivision(q1, q2);
+
+     assertEquals(expectedRatio, result, 1e-6, "Division math failed");
+ }
+
+ // --- DATA FACTORIES ---
+
+ private static Stream<Arguments> provideSubtractionData() {
+     List<Arguments> args = new ArrayList<>();
+
+     for (LengthUnit u1 : LengthUnit.values()) {
+         for (LengthUnit u2 : LengthUnit.values()) {
+             for (LengthUnit target : LengthUnit.values()) {
+                 double v1 = 10.0, v2 = 2.0;
+                 double totalBase = (v1 * u1.getConversionFactor()) -
+                                    (v2 * u2.getConversionFactor());
+                 double expected = Math.round(
+                         (totalBase / target.getConversionFactor()) * 100.0) / 100.0;
+
+                 args.add(Arguments.of(v1, u1, v2, u2, target, expected));
+             }
+         }
+     }
+
+     for (WeightUnit u1 : WeightUnit.values()) {
+         for (WeightUnit u2 : WeightUnit.values()) {
+             for (WeightUnit target : WeightUnit.values()) {
+                 double v1 = 10.0, v2 = 2.0;
+                 double totalBase = (v1 * u1.getConversionFactor()) -
+                                    (v2 * u2.getConversionFactor());
+                 double expected = Math.round(
+                         (totalBase / target.getConversionFactor()) * 100.0) / 100.0;
+
+                 args.add(Arguments.of(v1, u1, v2, u2, target, expected));
+             }
+         }
+     }
+
+     for (VolumeUnit u1 : VolumeUnit.values()) {
+         for (VolumeUnit u2 : VolumeUnit.values()) {
+             for (VolumeUnit target : VolumeUnit.values()) {
+                 double v1 = 10.0, v2 = 2.0;
+                 double totalBase = (v1 * u1.getConversionFactor()) -
+                                    (v2 * u2.getConversionFactor());
+                 double expected = Math.round(
+                         (totalBase / target.getConversionFactor()) * 100.0) / 100.0;
+
+                 args.add(Arguments.of(v1, u1, v2, u2, target, expected));
+             }
+         }
+     }
+
+     return args.stream();
+ }
+
+ private static Stream<Arguments> provideDivisionData() {
+     List<Arguments> args = new ArrayList<>();
+
+     for (LengthUnit u1 : LengthUnit.values()) {
+         for (LengthUnit u2 : LengthUnit.values()) {
+             double v1 = 10.0, v2 = 2.0;
+             double ratio = (v1 * u1.getConversionFactor()) /
+                            (v2 * u2.getConversionFactor());
+
+             args.add(Arguments.of(v1, u1, v2, u2, ratio));
+         }
+     }
+
+     for (WeightUnit u1 : WeightUnit.values()) {
+         for (WeightUnit u2 : WeightUnit.values()) {
+             double v1 = 10.0, v2 = 2.0;
+             double ratio = (v1 * u1.getConversionFactor()) /
+                            (v2 * u2.getConversionFactor());
+
+             args.add(Arguments.of(v1, u1, v2, u2, ratio));
+         }
+     }
+
+     for (VolumeUnit u1 : VolumeUnit.values()) {
+         for (VolumeUnit u2 : VolumeUnit.values()) {
+             double v1 = 10.0, v2 = 2.0;
+             double ratio = (v1 * u1.getConversionFactor()) /
+                            (v2 * u2.getConversionFactor());
+
+             args.add(Arguments.of(v1, u1, v2, u2, ratio));
+         }
+     }
+
+     return args.stream();
+ }
 }

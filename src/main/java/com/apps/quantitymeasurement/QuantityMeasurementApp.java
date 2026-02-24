@@ -2,7 +2,7 @@ package com.apps.quantitymeasurement;
 import com.apps.quantitymeasurement.LengthUnit;
 
 /**
- * UC10 - Generic Quantity Class with Unit Interface
+ * UC12 - Generic Quantity Class with Unit Interface
  * Replaces all duplicate category methods with unified generic methods!
  */
 public class QuantityMeasurementApp {
@@ -47,50 +47,68 @@ public class QuantityMeasurementApp {
         return sum;
     }
 
+     // --- NEW UC12: SUBTRACTION & DIVISION WRAPPERS ---
+
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(Quantity<U> q1, Quantity<U> q2) {
+        Quantity<U> diff = q1.subtract(q2);
+        System.out.println("Input: subtract(" + q1.toString() + ", " + q2.toString() + ") -> Output: " + diff.toString());
+        return diff;
+    }
+
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(Quantity<U> q1, Quantity<U> q2, U targetUnit) {
+        Quantity<U> diff = q1.subtract(q2, targetUnit);
+        System.out.println("Input: subtract(" + q1.toString() + ", " + q2.toString() + ", " + targetUnit + ") -> Output: " + diff.toString());
+        return diff;
+    }
+
+    public static <U extends IMeasurable> double demonstrateDivision(Quantity<U> q1, Quantity<U> q2) {
+        double ratio = q1.divide(q2);
+        System.out.println("Input: divide(" + q1.toString() + ", " + q2.toString() + ") -> Output: " + ratio);
+        return ratio;
+    }
+
     // ==========================================
-    // --- STANDALONE TESTING ---
+    // --- STANDALONE TESTING (MAIN METHOD) ---
     // ==========================================
 
     public static void main(String[] args) {
-        System.out.println("--- UC10 Generic Architecture Demonstrations ---\n");
+        System.out.println("--- UC12 Subtraction & Division Demonstrations ---\n");
         
-        // --- 1. LENGTH DEMO (Using the Generic Quantity Class) ---
+        // --- 1. LENGTH DEMONSTRATIONS ---
         System.out.println(">> LENGTH OPERATIONS:");
-        Quantity<LengthUnit> oneFoot = new Quantity<>(1.0, LengthUnit.FEET);
-        Quantity<LengthUnit> twelveInches = new Quantity<>(12.0, LengthUnit.INCHES);
+        Quantity<LengthUnit> tenFeet = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> sixInches = new Quantity<>(6.0, LengthUnit.INCHES);
+        Quantity<LengthUnit> twoFeet = new Quantity<>(2.0, LengthUnit.FEET);
+        Quantity<LengthUnit> twentyFourInches = new Quantity<>(24.0, LengthUnit.INCHES);
         
-        demonstrateEquality(oneFoot, twelveInches);
-        demonstrateAddition(oneFoot, twelveInches, LengthUnit.FEET);
-
-        // --- 2. WEIGHT DEMO (Using the exact same Generic methods!) ---
-        System.out.println(">> WEIGHT OPERATIONS:");
-        Quantity<WeightUnit> oneKg = new Quantity<>(1.0, WeightUnit.KILOGRAM);
-        Quantity<WeightUnit> thousandGrams = new Quantity<>(1000.0, WeightUnit.GRAM);
-        Quantity<WeightUnit> pounds = new Quantity<>(2.20462, WeightUnit.POUND);
+        // Subtraction
+        demonstrateSubtraction(tenFeet, sixInches); // 10 FEET - 6 INCHES = 9.5 FEET
+        demonstrateSubtraction(tenFeet, sixInches, LengthUnit.INCHES); // 10 FEET - 6 INCHES to INCHES = 114.0 INCHES
         
-        demonstrateEquality(oneKg, thousandGrams);
-        demonstrateConversion(pounds, WeightUnit.KILOGRAM);
-        demonstrateAddition(oneKg, thousandGrams, WeightUnit.GRAM);
+        // Division
+        demonstrateDivision(tenFeet, twoFeet); // 10 FEET / 2 FEET = 5.0
+        demonstrateDivision(twentyFourInches, twoFeet); // 24 INCHES / 2 FEET = 1.0
         
-        // --- 3. CROSS-CATEGORY PREVENTION (Proving Type Safety) ---
-        System.out.println(">> CROSS-CATEGORY PREVENTION:");
-        System.out.println("Can 1.0 FOOT equal 1.0 KILOGRAM?");
-        System.out.println("Output: " + oneFoot.equals(oneKg)); 
+        System.out.println("\n>> WEIGHT OPERATIONS:");
+        Quantity<WeightUnit> tenKg = new Quantity<>(10.0, WeightUnit.KILOGRAM);
+        Quantity<WeightUnit> fiveKg = new Quantity<>(5.0, WeightUnit.KILOGRAM);
+        Quantity<WeightUnit> fiveThousandGrams = new Quantity<>(5000.0, WeightUnit.GRAM);
         
-        // --- 3. VOLUME DEMO (UC11) ---
-        System.out.println(">> VOLUME OPERATIONS:");
-        Quantity<VolumeUnit> oneGallon = new Quantity<>(1.0, VolumeUnit.GALLON);
-        Quantity<VolumeUnit> liters = new Quantity<>(3.78541, VolumeUnit.LITER);
-        Quantity<VolumeUnit> milliLiters = new Quantity<>(1000.0, VolumeUnit.MILLILITER);
+        // Subtraction
+        demonstrateSubtraction(tenKg, fiveThousandGrams); // 10 KG - 5000 G = 5.0 KG
         
-        demonstrateEquality(oneGallon, liters);
-        demonstrateConversion(oneGallon, VolumeUnit.MILLILITER);
-        demonstrateAddition(liters, milliLiters, VolumeUnit.LITER);
-
-        // --- 4. CROSS-CATEGORY PREVENTION (Proving Type Safety) ---
-        System.out.println(">> CROSS-CATEGORY PREVENTION:");
-        System.out.println("Can 1.0 LITER equal 1.0 KILOGRAM?");
-        System.out.println("Output: " + liters.equals(oneKg)); 
+        // Division
+        demonstrateDivision(tenKg, fiveKg); // 10 KG / 5 KG = 2.0
         
+        System.out.println("\n>> VOLUME OPERATIONS:");
+        Quantity<VolumeUnit> fiveLiters = new Quantity<>(5.0, VolumeUnit.LITER);
+        Quantity<VolumeUnit> tenLiters = new Quantity<>(10.0, VolumeUnit.LITER);
+        Quantity<VolumeUnit> fiveHundredMl = new Quantity<>(500.0, VolumeUnit.MILLILITER);
+        
+        // Subtraction
+        demonstrateSubtraction(fiveLiters, fiveHundredMl); // 5 L - 500 ML = 4.5 L
+        
+        // Division
+        demonstrateDivision(fiveLiters, tenLiters); // 5 L / 10 L = 0.5
     }
 }
