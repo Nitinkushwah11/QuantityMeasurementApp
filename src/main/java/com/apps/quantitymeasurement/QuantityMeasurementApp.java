@@ -76,7 +76,21 @@ public class QuantityMeasurementApp {
         System.out.println(">> CROSS-CATEGORY PREVENTION:");
         System.out.println("Can 1.0 FOOT equal 1.0 KILOGRAM?");
         System.out.println("Output: " + oneFoot.equals(oneKg)); 
-        // Note: We can't use demonstrateEquality(oneFoot, oneKg) because the compiler 
-        // physically stops us from passing mismatched <U> types to the method! That is true safety.
+        
+        // --- 3. VOLUME DEMO (UC11) ---
+        System.out.println(">> VOLUME OPERATIONS:");
+        Quantity<VolumeUnit> oneGallon = new Quantity<>(1.0, VolumeUnit.GALLON);
+        Quantity<VolumeUnit> liters = new Quantity<>(3.78541, VolumeUnit.LITER);
+        Quantity<VolumeUnit> milliLiters = new Quantity<>(1000.0, VolumeUnit.MILLILITER);
+        
+        demonstrateEquality(oneGallon, liters);
+        demonstrateConversion(oneGallon, VolumeUnit.MILLILITER);
+        demonstrateAddition(liters, milliLiters, VolumeUnit.LITER);
+
+        // --- 4. CROSS-CATEGORY PREVENTION (Proving Type Safety) ---
+        System.out.println(">> CROSS-CATEGORY PREVENTION:");
+        System.out.println("Can 1.0 LITER equal 1.0 KILOGRAM?");
+        System.out.println("Output: " + liters.equals(oneKg)); 
+        
     }
 }
