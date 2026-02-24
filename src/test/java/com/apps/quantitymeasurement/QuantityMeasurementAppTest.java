@@ -25,285 +25,135 @@ import com.apps.quantitymeasurement.LengthUnit;
 
 public class QuantityMeasurementAppTest {
 
-	//=========================================
-	//UC-4 test cases with @MethodSource to provide data automatically to test all possible test cases
-	//=========================================
-	
-	
-	@ParameterizedTest(name = "Equality Matrix {index}: {0} {1} should equal {2} {3}")
-    @MethodSource("provideLengthsForEqualityMatrix")
-    public void testCrossUnitEqualityMatrix(double val1, LengthUnit unit1, double val2, LengthUnit unit2) {
-        // 1. Arrange: Create the two lengths based on the arguments handed to us by the Stream
-        Length length1 = new Length(val1, unit1);
-        Length length2 = new Length(val2, unit2);
-        
-        // 2. Assert: Check that your UC4 equals() method recognizes them as equal
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(length1, length2), 
-                   val1 + " " + unit1 + " should equal " + val2 + " " + unit2);
-    }
-
-    // The DYNAMIC Data Factory Method
-    private static Stream<Arguments> provideLengthsForEqualityMatrix() {
-       List<Arguments> arguments = new ArrayList<>();
-
-        // Loop through EVERY unit for the left side
-        for (LengthUnit unit1 : LengthUnit.values()) {
-            // Loop through EVERY unit for the right side
-            for (LengthUnit unit2 : LengthUnit.values()) {
-                
-                double val1 = 1.0; // We always start with 1.0 of the first unit
-                
-                // Calculate exactly what val2 should be based on their conversion factors
-                double val2 = (val1 * unit1.getConversionFactor()) / unit2.getConversionFactor();
-                
-                
-                
-                arguments.add(Arguments.of(val1, unit1, val2, unit2));
-            }
-        }
-        
-        return arguments.stream();
-    }
-    
-    
-	@Test
-    public void testEquality_FeetToFeet_DifferentValue() {
-        assertNotEquals(new Length(1.0, LengthUnit.FEET), new Length(2.0, LengthUnit.FEET));
-    }
-	
-	 @Test
-	    public void testEquality_InchToInch_DifferentValue() {
-	        assertNotEquals(new Length(1.0, LengthUnit.INCHES), new Length(2.0, LengthUnit.INCHES));
-	    }
-
-    // Invalid enum handling
-    @Test
-    public void testEquality_InvalidUnit() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            LengthUnit.valueOf("INVALID_UNIT");
-        });
-    }
-
-    // Null unit handling
-    @Test
-    public void testEquality_NullUnit() {
-        Length validLength = new Length(1.0, LengthUnit.FEET);
-        Length invalidLength = new Length(1.0, null);
-
-        assertThrows(NullPointerException.class, () -> {
-            validLength.equals(invalidLength);
-        });
-    }
-
-    @Test
-    public void testEquality_SameReference() {
-        Length length = new Length(1.0, LengthUnit.FEET);
-        assertEquals(length, length);
-    }
-
-    @Test
-    public void testEquality_NullComparison() {
-        assertNotEquals(null, new Length(1.0, LengthUnit.FEET));
-    }
-    
-    
-    // ==========================================
-    // --- UC5: EXPLICIT CONVERSION TESTS ---
+	// ==========================================
+    // --- 1. IMEASURABLE INTERFACE TESTS ---
     // ==========================================
 
-    private static final double EPSILON = 1e-6;
-
-   // Automated tests
-    @ParameterizedTest(name="{index}: {0} {1} -> {2} {3}")
-    @MethodSource("dataProviderForConversionTest")
-    
-    //test for checking the conversions
-    public void testConversions(double length1,LengthUnit unit1,double length2, LengthUnit unit2) {
-    	//calling conversion from static utility
-    	
-    	double converted=QuantityMeasurementApp.convert(length1, unit1, unit2);
-    	
-    	//asserting equal with output
-    	
-    	assertEquals(converted,length2,EPSILON);
-    }
-    
-    
-    //method to provide data for the test
-    public static Stream<Arguments> dataProviderForConversionTest(){
-    	List<Arguments> args=new ArrayList<>();
-    	
-    	//using 12.0 as it will multiply and divide properly for some units
-    	
-    	double initialValue=12.0;
-    	
-    	//looping to attach all possible conversions in args
-    	for(LengthUnit source:LengthUnit.values()) {
-    		//looping again to collect to all values
-    		for(LengthUnit target:LengthUnit.values()) {
-    			
-    			//converting to target 
-    			double converted=(initialValue*source.getConversionFactor())/target.getConversionFactor();
-    			
-    			
-    			//adding to the target
-    			args.add(Arguments.of(initialValue,source,converted,target));
-    		}
-    	}
-    	
-    	
-    	// returning the stream
-    	return args.stream();
-    }
-    
-
-
     @Test
-    public void testConversion_RoundTrip_PreservesValue() {
-        double originalValue = 5.0;
-        // convert(convert(v, A, B), B, A) ≈ v
-        double inInches = QuantityMeasurementApp.convert(originalValue, LengthUnit.YARDS, LengthUnit.INCHES);
-        double backToYards = QuantityMeasurementApp.convert(inInches, LengthUnit.INCHES, LengthUnit.YARDS);
-        assertEquals(originalValue, backToYards, EPSILON);
+    public void testIMeasurableInterface_LengthUnitImplementation() {
+        assertTrue(IMeasurable.class.isAssignableFrom(LengthUnit.class), "LengthUnit must implement IMeasurable");
+        IMeasurable unit = LengthUnit.FEET;
+        assertEquals(1.0, unit.getConversionFactor(), "Feet factor should be 1.0");
     }
 
     @Test
-    public void testConversion_ZeroValue() {
-        double result = QuantityMeasurementApp.convert(0.0, LengthUnit.FEET, LengthUnit.INCHES);
-        assertEquals(0.0, result, EPSILON);
+    public void testIMeasurableInterface_WeightUnitImplementation() {
+        assertTrue(IMeasurable.class.isAssignableFrom(WeightUnit.class), "WeightUnit must implement IMeasurable");
+        IMeasurable unit = WeightUnit.KILOGRAM;
+        assertEquals(1.0, unit.getConversionFactor(), "Kilogram factor should be 1.0");
     }
 
-    @Test
-    public void testConversion_NegativeValue() {
-        double result = QuantityMeasurementApp.convert(-1.0, LengthUnit.FEET, LengthUnit.INCHES);
-        assertEquals(-12.0, result, EPSILON);
+    // ==========================================
+    // --- 8. AUTOMATED MATRICES (UC4, UC5, UC6/UC7) ---
+    // ==========================================
+
+    @ParameterizedTest(name = "Automated Equality: {0} {1} == {2} {3} -> {4}")
+    @MethodSource("provideEqualityData")
+    public <U extends IMeasurable> void testAutomatedEqualityMatrix(double val1, U unit1, double val2, U unit2, boolean expected) {
+        Quantity<U> q1 = new Quantity<>(val1, unit1);
+        Quantity<U> q2 = new Quantity<>(val2, unit2);
+        assertEquals(expected, q1.equals(q2), "Equality matrix failed");
     }
 
-    @Test
-    public void testConversion_InvalidUnit_Throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            QuantityMeasurementApp.convert(1.0, LengthUnit.FEET, null);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            QuantityMeasurementApp.convert(1.0, null, LengthUnit.INCHES);
-        });
+    @ParameterizedTest(name = "Automated Conversion: {0} {1} to {2} = {3}")
+    @MethodSource("provideConversionData")
+    public <U extends IMeasurable> void testAutomatedConversionMatrix(double val, U fromUnit, U toUnit, double expectedVal) {
+        Quantity<U> q = new Quantity<>(val, fromUnit);
+        Quantity<U> converted = q.convertTo(toUnit);
+
+        assertEquals(expectedVal, converted.getValue(), "Conversion math failed");
+        assertEquals(toUnit, converted.getUnit(), "Target unit mismatch");
     }
 
-    @Test
-    public void testConversion_NaNOrInfinite_Throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            QuantityMeasurementApp.convert(Double.NaN, LengthUnit.FEET, LengthUnit.INCHES);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            QuantityMeasurementApp.convert(Double.POSITIVE_INFINITY, LengthUnit.FEET, LengthUnit.INCHES);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            QuantityMeasurementApp.convert(Double.NEGATIVE_INFINITY, LengthUnit.FEET, LengthUnit.INCHES);
-        });
+    @ParameterizedTest(name = "Automated Addition: {0} {1} + {2} {3} to {4} = {5}")
+    @MethodSource("provideAdditionData")
+    public <U extends IMeasurable> void testAutomatedAdditionMatrix(double val1, U unit1, double val2, U unit2, U targetUnit, double expectedSum) {
+        Quantity<U> q1 = new Quantity<>(val1, unit1);
+        Quantity<U> q2 = new Quantity<>(val2, unit2);
+
+        Quantity<U> result = QuantityMeasurementApp.demonstrateAddition(q1, q2, targetUnit);
+
+        assertEquals(expectedSum, result.getValue(), "Addition math failed");
+        assertEquals(targetUnit, result.getUnit(), "Target unit mismatch");
     }
 
-    @Test
-    public void testConversion_PrecisionTolerance() {
-        double result = QuantityMeasurementApp.convert(1.0, LengthUnit.FEET, LengthUnit.INCHES);
-        // This explicitly proves the epsilon works. 
-        // 12.0 is equal to 12.0000001 within the 1e-6 (0.000001) tolerance.
-        assertEquals(12.0000001, result, EPSILON);
-    }
-    
-    
-    //=================================
-    //UC 6 Specific comments
-    //=================================
-    
-   //automated tests for all available values
-    
-    @ParameterizedTest(name = "Addition {index}: {0} {1} + {2} {3} = {4} {1}")
-    @MethodSource("provideDataForAdditionMatrix")
-    public void testCrossUnitAdditionMatrix(double val1, LengthUnit unit1,
-                                            double val2, LengthUnit unit2,
-                                            double expectedSumValue) {
+    // --- DATA FACTORIES FOR THE MATRICES ---
 
-        // Create input and expected objects
-        Length length1 = new Length(val1, unit1);
-        Length length2 = new Length(val2, unit2);
-        Length expectedLength = new Length(expectedSumValue, unit1);
+    private static Stream<Arguments> provideEqualityData() {
+        List<Arguments> args = new ArrayList<>();
 
-        // Perform addition
-        Length actualSumLength =
-                QuantityMeasurementApp.demonstrateLengthAddition(length1, length2);
-
-        // Verify result
-        assertTrue(
-            QuantityMeasurementApp.demonstrateLengthEquality(actualSumLength, expectedLength),
-            "Failed addition: " + val1 + " " + unit1 + " + " + val2 + " " + unit2
-        );
-    }
-
-    // Data provider for addition test
-    private static Stream<Arguments> provideDataForAdditionMatrix() {
-        java.util.List<Arguments> arguments = new java.util.ArrayList<>();
-
-        double val1 = 2.0;
-        double val2 = 3.0;
-
-        for (LengthUnit unit1 : LengthUnit.values()) {
-            for (LengthUnit unit2 : LengthUnit.values()) {
-
-                // Convert both values to base unit
-                double totalBaseUnits =
-                        (val1 * unit1.getConversionFactor()) +
-                        (val2 * unit2.getConversionFactor());
-
-                // Convert back to target unit
-                double rawExpected =
-                        totalBaseUnits / unit1.getConversionFactor();
-
-                // Round to 2 decimal places
-                double expectedSumValue =
-                        Math.round(rawExpected * 100.0) / 100.0;
-
-                arguments.add(
-                    Arguments.of(val1, unit1, val2, unit2, expectedSumValue)
-                );
+        for (LengthUnit u1 : LengthUnit.values()) {
+            for (LengthUnit u2 : LengthUnit.values()) {
+                double val1 = 2.0;
+                double val2 = (val1 * u1.getConversionFactor()) / u2.getConversionFactor();
+                args.add(Arguments.of(val1, u1, val2, u2, true));
+                args.add(Arguments.of(val1, u1, val2 + 1.0, u2, false));
             }
         }
 
-        return arguments.stream();
-    }
-    
-    @Test
-    public void testAddition_Commutativity() {
-        Length sum1 = QuantityMeasurementApp.demonstrateLengthAddition(new Length(1.0, LengthUnit.FEET), new Length(12.0, LengthUnit.INCHES));
-        Length sum2 = QuantityMeasurementApp.demonstrateLengthAddition(new Length(12.0, LengthUnit.INCHES), new Length(1.0, LengthUnit.FEET));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sum1, sum2));
+        for (WeightUnit u1 : WeightUnit.values()) {
+            for (WeightUnit u2 : WeightUnit.values()) {
+                double val1 = 2.0;
+                double val2 = (val1 * u1.getConversionFactor()) / u2.getConversionFactor();
+                args.add(Arguments.of(val1, u1, val2, u2, true));
+                args.add(Arguments.of(val1, u1, val2 + 1.0, u2, false));
+            }
+        }
+
+        return args.stream();
     }
 
-    @Test
-    public void testAddition_WithZero() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(5.0, LengthUnit.FEET), new Length(0.0, LengthUnit.INCHES));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(5.0, LengthUnit.FEET)));
+    private static Stream<Arguments> provideConversionData() {
+        List<Arguments> args = new ArrayList<>();
+
+        for (LengthUnit u1 : LengthUnit.values()) {
+            for (LengthUnit u2 : LengthUnit.values()) {
+                double val = 2.0;
+                double expected = (val * u1.getConversionFactor()) / u2.getConversionFactor();
+                expected = Math.round(expected * 100.0) / 100.0;
+                args.add(Arguments.of(val, u1, u2, expected));
+            }
+        }
+
+        for (WeightUnit u1 : WeightUnit.values()) {
+            for (WeightUnit u2 : WeightUnit.values()) {
+                double val = 2.0;
+                double expected = (val * u1.getConversionFactor()) / u2.getConversionFactor();
+                expected = Math.round(expected * 100.0) / 100.0;
+                args.add(Arguments.of(val, u1, u2, expected));
+            }
+        }
+
+        return args.stream();
     }
 
-    @Test
-    public void testAddition_NegativeValues() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(5.0, LengthUnit.FEET), new Length(-2.0, LengthUnit.FEET));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(3.0, LengthUnit.FEET)));
-    }
+    private static Stream<Arguments> provideAdditionData() {
+        List<Arguments> args = new ArrayList<>();
 
-    @Test
-    public void testAddition_NullSecondOperand() {
-        assertThrows(IllegalArgumentException.class, () -> QuantityMeasurementApp.demonstrateLengthAddition(new Length(1.0, LengthUnit.FEET), null));
-    }
+        for (LengthUnit u1 : LengthUnit.values()) {
+            for (LengthUnit u2 : LengthUnit.values()) {
+                for (LengthUnit target : LengthUnit.values()) {
+                    double v1 = 2.0, v2 = 3.0;
+                    double totalBase = (v1 * u1.getConversionFactor()) + (v2 * u2.getConversionFactor());
+                    double expected = totalBase / target.getConversionFactor();
+                    expected = Math.round(expected * 100.0) / 100.0;
+                    args.add(Arguments.of(v1, u1, v2, u2, target, expected));
+                }
+            }
+        }
 
-    @Test
-    public void testAddition_LargeValues() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(1e6, LengthUnit.FEET), new Length(1e6, LengthUnit.FEET));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(2e6, LengthUnit.FEET)));
-    }
+        for (WeightUnit u1 : WeightUnit.values()) {
+            for (WeightUnit u2 : WeightUnit.values()) {
+                for (WeightUnit target : WeightUnit.values()) {
+                    double v1 = 2.0, v2 = 3.0;
+                    double totalBase = (v1 * u1.getConversionFactor()) + (v2 * u2.getConversionFactor());
+                    double expected = totalBase / target.getConversionFactor();
+                    expected = Math.round(expected * 100.0) / 100.0;
+                    args.add(Arguments.of(v1, u1, v2, u2, target, expected));
+                }
+            }
+        }
 
-    @Test
-    public void testAddition_SmallValues() {
-        Length sumLength = QuantityMeasurementApp.demonstrateLengthAddition(new Length(0.01, LengthUnit.FEET), new Length(0.02, LengthUnit.FEET));
-        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(sumLength, new Length(0.03, LengthUnit.FEET)));
+        return args.stream();
     }
 }

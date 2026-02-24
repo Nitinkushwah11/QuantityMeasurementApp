@@ -5,7 +5,7 @@ package com.apps.quantitymeasurement;
  * and to enforce the Single Responsibility Principle.
  * * Base unit is now explicitly FEET (1.0).
  */
-public enum LengthUnit {
+public enum LengthUnit implements IMeasurable{
     FEET(1.0), 
     INCHES(1.0 / 12.0), 
     YARDS(3.0), 

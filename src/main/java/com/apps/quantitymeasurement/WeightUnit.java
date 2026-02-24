@@ -5,7 +5,7 @@ package com.apps.quantitymeasurement;
  * UC9: Proves architectural scalability by mirroring LengthUnit.
  * * Base unit is explicitly KILOGRAM (1.0).
  */
-public enum WeightUnit {
+public enum WeightUnit implements IMeasurable {
     KILOGRAM(1.0),
     GRAM(0.001),         // 1 gram is 0.001 kilograms
     POUND(0.453592);     // 1 pound is roughly 0.453592 kilograms
