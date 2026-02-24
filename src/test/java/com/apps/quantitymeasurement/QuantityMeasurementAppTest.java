@@ -574,4 +574,130 @@ public class QuantityMeasurementAppTest {
 
      return args.stream();
  }
+ 
+ /**
+  * Helper method to use Reflection to find the private ArithmeticOperation enum.
+  */
+ private Class<?> getArithmeticOperationEnum() throws Exception {
+     for (Class<?> clazz : Quantity.class.getDeclaredClasses()) {
+         if (clazz.getSimpleName().equals("ArithmeticOperation")) {
+             return clazz;
+         }
+     }
+     throw new ClassNotFoundException(
+             "ArithmeticOperation enum not found inside Quantity class");
+ }
+
+ @Test
+ public void testHelper_PrivateVisibility() throws Exception {
+
+     Method method = Quantity.class.getDeclaredMethod(
+             "performBaseArithmetic",
+             Quantity.class,
+             getArithmeticOperationEnum()
+     );
+
+     assertTrue(
+             Modifier.isPrivate(method.getModifiers()),
+             "performBaseArithmetic should be private to ensure Encapsulation"
+     );
+ }
+
+ @Test
+ public void testValidation_Helper_PrivateVisibility() throws Exception {
+
+     Method method = Quantity.class.getDeclaredMethod(
+             "validateArithmeticOperands",
+             Quantity.class,
+             IMeasurable.class,
+             boolean.class
+     );
+
+     assertTrue(
+             Modifier.isPrivate(method.getModifiers()),
+             "validateArithmeticOperands should be private"
+     );
+ }
+
+ @Test
+ @SuppressWarnings({"unchecked", "rawtypes"})
+ public void testEnumConstant_ADD_CorrectlyAdds() throws Exception {
+
+     Class<?> enumClass = getArithmeticOperationEnum();
+
+     Object addConstant =
+             Enum.valueOf((Class<Enum>) enumClass, "ADD");
+
+     Method computeMethod =
+             enumClass.getDeclaredMethod("compute", double.class, double.class);
+     computeMethod.setAccessible(true);
+
+     double result =
+             (double) computeMethod.invoke(addConstant, 7.0, 3.0);
+
+     assertEquals(10.0, result, "ADD enum logic failed");
+ }
+
+ @Test
+ @SuppressWarnings({"unchecked", "rawtypes"})
+ public void testEnumConstant_SUBTRACT_CorrectlySubtracts() throws Exception {
+
+     Class<?> enumClass = getArithmeticOperationEnum();
+
+     Object subtractConstant =
+             Enum.valueOf((Class<Enum>) enumClass, "SUBTRACT");
+
+     Method computeMethod =
+             enumClass.getDeclaredMethod("compute", double.class, double.class);
+     computeMethod.setAccessible(true);
+
+     double result =
+             (double) computeMethod.invoke(subtractConstant, 7.0, 3.0);
+
+     assertEquals(4.0, result, "SUBTRACT enum logic failed");
+ }
+
+ @Test
+ @SuppressWarnings({"unchecked", "rawtypes"})
+ public void testEnumConstant_DIVIDE_CorrectlyDivides() throws Exception {
+
+     Class<?> enumClass = getArithmeticOperationEnum();
+
+     Object divideConstant =
+             Enum.valueOf((Class<Enum>) enumClass, "DIVIDE");
+
+     Method computeMethod =
+             enumClass.getDeclaredMethod("compute", double.class, double.class);
+     computeMethod.setAccessible(true);
+
+     double result =
+             (double) computeMethod.invoke(divideConstant, 7.0, 2.0);
+
+     assertEquals(3.5, result, "DIVIDE enum logic failed");
+ }
+
+ @Test
+ @SuppressWarnings({"unchecked", "rawtypes"})
+ public void testArithmeticOperation_DivideByZero_EnumThrows() throws Exception {
+
+     Class<?> enumClass = getArithmeticOperationEnum();
+
+     Object divideConstant =
+             Enum.valueOf((Class<Enum>) enumClass, "DIVIDE");
+
+     Method computeMethod =
+             enumClass.getDeclaredMethod("compute", double.class, double.class);
+     computeMethod.setAccessible(true);
+
+     InvocationTargetException thrown = assertThrows(
+             InvocationTargetException.class,
+             () -> computeMethod.invoke(divideConstant, 10.0, 0.0)
+     );
+
+     Throwable actualException = thrown.getCause();
+
+     assertTrue(actualException instanceof IllegalArgumentException);
+     assertEquals("Cannot divide by zero", actualException.getMessage());
+ }
+}
 }

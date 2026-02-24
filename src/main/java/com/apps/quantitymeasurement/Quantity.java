@@ -51,101 +51,92 @@ public class Quantity<U extends IMeasurable> {
         return new Quantity<>(roundedTargetValue, targetUnit);
     }
 
+    // ==========================================
+    // --- UC13: REFACTORED PUBLIC MATH API ---
+    // ==========================================
+
     public Quantity<U> add(Quantity<U> other) {
         return this.add(other, this.unit);
     }
 
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
-        if (other == null || targetUnit == null) throw new IllegalArgumentException("Arguments cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Incompatible categories");
-
-        double thisBase = this.unit.convertToBaseUnit(this.value);
-        double thatBase = other.unit.convertToBaseUnit(other.value);
+        validateArithmeticOperands(other, targetUnit, true);
+        double baseResult = performBaseArithmetic(other, ArithmeticOperation.ADD);
         
-        double totalBase = thisBase + thatBase;
-        
-        double converted = targetUnit.convertFromBaseUnit(totalBase);
-        converted = Math.round(converted * 100.0) / 100.0;
-        
-        return new Quantity<>(converted, targetUnit);
+        double converted = targetUnit.convertFromBaseUnit(baseResult);
+        return new Quantity<>(Math.round(converted * 100.0) / 100.0, targetUnit);
     }
-    
-   
-    /**
-     * UC12: Subtracts another Quantity from this Quantity.
-     * Implicitly returns the result in the unit of THIS quantity.
-     * * @param other the Quantity to subtract
-     * @return a new Quantity representing the difference
-     */
+
     public Quantity<U> subtract(Quantity<U> other) {
         return this.subtract(other, this.unit);
     }
 
-    /**
-     * UC12: Subtracts another Quantity from this Quantity.
-     * Explicitly returns the result in the specified target unit.
-     * * @param other the Quantity to subtract
-     * @param targetUnit the unit to convert the final answer into
-     * @return a new Quantity representing the difference in the target unit
-     * @throws IllegalArgumentException if arguments are null or incompatible
-     */
     public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+        validateArithmeticOperands(other, targetUnit, true);
+        double baseResult = performBaseArithmetic(other, ArithmeticOperation.SUBTRACT);
         
-    	if (other == null || targetUnit == null) throw new IllegalArgumentException("Arguments cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Incompatible categories");
-        
-        //converting the values
-        double thisBase=this.unit.convertToBaseUnit(this.value);
-        double otherBase=other.unit.convertToBaseUnit(other.value);
-        
-        double subtractedValue=thisBase-otherBase;
-        
-        double converted=targetUnit.convertFromBaseUnit(subtractedValue);
-        
-        
-        converted=Math.round(converted*100.0)/100.0;
-  
-        return new Quantity<>(converted,targetUnit); 
-    }
-    
-    
-    /**
-     * UC12: Divides this Quantity by another Quantity.
-     * Returns a dimensionless scalar (pure number) representing the ratio.
-     * * @param other the Quantity to act as the divisor
-     * @return a primitive double representing how many times 'other' fits into 'this'
-     * @throws IllegalArgumentException if 'other' is null, incompatible, or zero
-     */
-    public double divide(Quantity<U> other) {
-    	
-        //checking for null
-    	if(other==null) {
-    		throw new IllegalArgumentException("Arguments cannot be null");
-    	}
-    	
-    	if(this.unit.getClass()!=other.unit.getClass()) {
-    		throw new IllegalArgumentException("Incompatible categories");
-    	}
-    	
-        //converting to base Units
-        double thisBase=this.unit.convertToBaseUnit(this.value);
-        double otherBase=other.unit.convertToBaseUnit(other.value);
-        
-        
-        //checking for zero denominator
-        if(Double.compare(otherBase, 0.0)==0) {
-        	throw new IllegalArgumentException("Cannot divide by zero");
-        }
-        
-        
-        double result= thisBase/otherBase; //Divide thisBase / otherBase
-        
-        
-        //Return the raw double result (no rounding needed for pure scalars)
-        
-        return result; // Replace with your logic
+        double converted = targetUnit.convertFromBaseUnit(baseResult);
+        return new Quantity<>(Math.round(converted * 100.0) / 100.0, targetUnit);
     }
 
+    public double divide(Quantity<U> other) {
+        validateArithmeticOperands(other, null, false);
+        return performBaseArithmetic(other, ArithmeticOperation.DIVIDE);
+    }
+
+    // ==========================================
+    // --- UC13: CENTRALIZED HELPERS (THE DRY MAGIC) ---
+    // ==========================================
+
+    /**
+     * Centralized validation to prevent duplicate null and cross-category checks.
+     */
+    private void validateArithmeticOperands(Quantity<U> other, U targetUnit, boolean targetUnitRequired) {
+        if (other == null) throw new IllegalArgumentException("Arguments cannot be null");
+        if (targetUnitRequired && targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
+        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Incompatible categories");
+    }
+
+    /**
+     * Centralized conversion and execution engine.
+     */
+    private double performBaseArithmetic(Quantity<U> other, ArithmeticOperation operation) {
+        double thisBase = this.unit.convertToBaseUnit(this.value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+        return operation.compute(thisBase, otherBase);
+    }
+
+    // ==========================================
+    // --- UC13: THE STRATEGY ENUM (IMAGE 1) ---
+    // ==========================================
+
+    private enum ArithmeticOperation {
+        ADD {
+            @Override
+            public double compute(double thisBase, double otherBase) {
+                return thisBase + otherBase;
+            }
+        },
+        SUBTRACT {
+            @Override
+            public double compute(double thisBase, double otherBase) {
+                return thisBase - otherBase;
+            }
+        },
+        DIVIDE {
+            @Override
+            public double compute(double thisBase, double otherBase) {
+                if (otherBase == 0.0) {
+                    throw new IllegalArgumentException("Cannot divide by zero");
+                }
+                return thisBase / otherBase;
+            }
+        };
+
+        public abstract double compute(double thisBase, double otherBase);
+    }
+
+   
     @Override
     public String toString() {
         // e.g., "12.00 INCHES" or "1.00 KILOGRAM"
