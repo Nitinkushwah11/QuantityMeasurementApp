@@ -2,7 +2,7 @@ package com.apps.quantitymeasurement;
 
 /**
  * Standalone Enum defining the supported units of weight.
- * UC9: Proves architectural scalability by mirroring LengthUnit.
+ 
  * * Base unit is explicitly KILOGRAM (1.0).
  */
 public enum WeightUnit implements IMeasurable {
@@ -33,4 +33,15 @@ public enum WeightUnit implements IMeasurable {
     public double convertFromBaseUnit(double baseValue) {
         return baseValue / this.conversionFactor;
     }
+    
+    // UC14: Define Lambda Expression for arithmetic support
+    private final SupportsArithmetic supportsArithmetic = () -> true;
+    
+    
+ // UC14: Override to use the enum's specific lambda
+    @Override
+    public boolean supportsArithmetic() {
+        return this.supportsArithmetic.isSupported();
+    }
+
 }

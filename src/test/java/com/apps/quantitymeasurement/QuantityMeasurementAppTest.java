@@ -8,6 +8,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+
 
 
 
@@ -699,5 +704,108 @@ public class QuantityMeasurementAppTest {
      assertTrue(actualException instanceof IllegalArgumentException);
      assertEquals("Cannot divide by zero", actualException.getMessage());
  }
-}
+ 
+ 
+ @Test
+ public void testTemperatureEquality_ReflexiveProperty() {
+     Quantity<TemperatureUnit> temp = new Quantity<>(50.0, TemperatureUnit.CELSIUS);
+     assertTrue(temp.equals(temp));
+ }
+
+ @Test
+ public void testTemperatureEquality_SymmetricProperty() {
+     Quantity<TemperatureUnit> c = new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+     Quantity<TemperatureUnit> f = new Quantity<>(212.0, TemperatureUnit.FAHRENHEIT);
+     assertTrue(c.equals(f));
+     assertTrue(f.equals(c));
+ }
+
+ @Test
+ public void testTemperatureEquality_TransitiveProperty() {
+     Quantity<TemperatureUnit> c1 = new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+     Quantity<TemperatureUnit> f = new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+     Quantity<TemperatureUnit> c2 = new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+     
+     assertTrue(c1.equals(f));
+     assertTrue(f.equals(c2));
+     assertTrue(c1.equals(c2));
+ }
+
+ @Test
+ public void testTemperatureUnsupportedOperation_Add() {
+     Quantity<TemperatureUnit> q1 = new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+     Quantity<TemperatureUnit> q2 = new Quantity<>(50.0, TemperatureUnit.CELSIUS);
+     
+     UnsupportedOperationException thrown = assertThrows(
+             UnsupportedOperationException.class, 
+             () -> q1.add(q2)
+     );
+     assertTrue(thrown.getMessage().contains("Arithmetic operations"));
+ }
+
+ @Test
+ public void testTemperatureUnsupportedOperation_Subtract() {
+     Quantity<TemperatureUnit> q1 = new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+     Quantity<TemperatureUnit> q2 = new Quantity<>(50.0, TemperatureUnit.CELSIUS);
+     
+     UnsupportedOperationException thrown = assertThrows(
+             UnsupportedOperationException.class, 
+             () -> q1.subtract(q2)
+     );
+     assertTrue(thrown.getMessage().contains("Arithmetic operations"));
+ }
+
+ @Test
+ public void testTemperatureUnsupportedOperation_Divide() {
+     Quantity<TemperatureUnit> q1 = new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+     Quantity<TemperatureUnit> q2 = new Quantity<>(50.0, TemperatureUnit.CELSIUS);
+     
+     UnsupportedOperationException thrown = assertThrows(
+             UnsupportedOperationException.class, 
+             () -> q1.divide(q2)
+     );
+     assertTrue(thrown.getMessage().contains("Arithmetic operations"));
+ }
+
+ @Test
+ public void testOperationSupportMethods_TemperatureUnitAddition() {
+     assertFalse(TemperatureUnit.CELSIUS.supportsArithmetic(), "Temperature should NOT support arithmetic");
+     assertFalse(TemperatureUnit.FAHRENHEIT.supportsArithmetic(), "Temperature should NOT support arithmetic");
+ }
+
+ @Test
+ public void testOperationSupportMethods_LengthUnitAddition() {
+     assertTrue(LengthUnit.FEET.supportsArithmetic(), "Length SHOULD support arithmetic via default inheritance");
+     assertTrue(WeightUnit.KILOGRAM.supportsArithmetic(), "Weight SHOULD support arithmetic");
+ }
+
+ @Test
+ public void testTemperatureVsLengthIncompatibility() {
+     Quantity<TemperatureUnit> temp = new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+     Quantity<LengthUnit> length = new Quantity<>(100.0, LengthUnit.FEET);
+     assertFalse(temp.equals(length), "Cross-category equality should safely return false");
+ }
+
+ @Test
+ public void testTemperatureVsWeightIncompatibility() {
+     Quantity<TemperatureUnit> temp = new Quantity<>(50.0, TemperatureUnit.CELSIUS);
+     Quantity<WeightUnit> weight = new Quantity<>(50.0, WeightUnit.KILOGRAM);
+     assertFalse(temp.equals(weight), "Cross-category equality should safely return false");
+ }
+
+ @Test
+ public void testTemperatureVsVolumeIncompatibility() {
+     Quantity<TemperatureUnit> temp = new Quantity<>(25.0, TemperatureUnit.CELSIUS);
+     Quantity<VolumeUnit> volume = new Quantity<>(25.0, VolumeUnit.LITER);
+     assertFalse(temp.equals(volume), "Cross-category equality should safely return false");
+ }
+
+ @Test
+ public void testTemperatureValidateOperationSupport_MethodBehavior() {
+     UnsupportedOperationException thrown = assertThrows(
+             UnsupportedOperationException.class, 
+             () -> TemperatureUnit.CELSIUS.validateOperationSupport("addition")
+     );
+     assertNotNull(thrown.getMessage());
+ }
 }

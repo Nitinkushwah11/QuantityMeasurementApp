@@ -38,4 +38,13 @@ public enum LengthUnit implements IMeasurable{
     public double convertFromBaseUnit(double baseValue) {
         return baseValue / this.conversionFactor;
     }
+ // UC14: Define Lambda Expression for arithmetic support
+    private final SupportsArithmetic supportsArithmetic = () -> true;
+    
+    
+ // UC14: Override to use the enum's specific lambda
+    @Override
+    public boolean supportsArithmetic() {
+        return this.supportsArithmetic.isSupported();
+    }
 }

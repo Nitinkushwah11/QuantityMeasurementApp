@@ -10,6 +10,9 @@ public enum VolumeUnit implements IMeasurable {
     LITER(1.0),
     MILLILITER(0.001),       // 1000 ML in 1 Liter
     GALLON(3.78541);         // 1 Gallon is ~3.78541 Liters
+	
+	// UC14: Define Lambda Expression for arithmetic support
+    private final SupportsArithmetic supportsArithmetic = () -> true;
 
     private final double conversionFactor;
 
@@ -17,7 +20,7 @@ public enum VolumeUnit implements IMeasurable {
         this.conversionFactor = conversionFactor;
     }
 
-    @Override
+    
     public double getConversionFactor() {
         return this.conversionFactor;
     }
@@ -30,5 +33,10 @@ public enum VolumeUnit implements IMeasurable {
     @Override
     public double convertFromBaseUnit(double baseValue) {
         return baseValue / this.conversionFactor;
+    }
+ // UC14: Override to use the enum's specific lambda
+    @Override
+    public boolean supportsArithmetic() {
+        return this.supportsArithmetic.isSupported();
     }
 }
