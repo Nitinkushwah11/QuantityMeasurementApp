@@ -358,7 +358,28 @@ UC11 extends the Generic Quantity system (UC10) to support **Volume measurements
 - Unit conversion
 - Addition (implicit & explicit target unit)
 - Cross-category comparison prevented
-- Immutable design
+- Immutable# UC12 – Subtraction & Division on Quantity
+
+## Description
+UC12 extends the generic `Quantity<U extends IMeasurable>` system by adding:
+
+- Subtraction → returns new `Quantity<U>`
+- Division → returns dimensionless `double`
+
+No architectural changes required.
+
+## Features
+- Cross-unit arithmetic (same category)
+- Explicit & implicit target unit
+- Cross-category prevention
+- Division by zero handling
+- Immutability preserved
+- Works for Length, Weight, Volume
+
+    🔗 *Code Link:*  
+👉 [UC-12](https://github.com/Nitinkushwah11/QuantityMeasurementApp/tree/feature/UC12-SubtractDivide)
+
+--- 
 - Fully backward compatible (UC1–UC10)
 
     🔗 *Code Link:*  
@@ -366,3 +387,4 @@ UC11 extends the Generic Quantity system (UC10) to support **Volume measurements
 
 
 ---
+
