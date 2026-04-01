@@ -8,22 +8,16 @@ import io.swagger.v3.oas.annotations.info.Info;
 /**
  * QuantityMeasurementApplication.java
  *
- * This is the entry point for the Spring Boot application. 
- * It enables auto-configuration, component scanning, and 
- * provides metadata for the OpenAPI/Swagger documentation.
+ * This is the entry point for the Spring Boot application. It enables
+ * auto-configuration, component scanning, and provides metadata for the
+ * OpenAPI/Swagger documentation.
  */
 @SpringBootApplication
-@OpenAPIDefinition(
-    info = @Info(
-        title = "Quantity Measurement API",
-        version = "1.0.0",
-        description = "REST API for quantity measurements with support for multiple unit types"
-    )
-)
+@OpenAPIDefinition(info = @Info(title = "Quantity Measurement API", version = "1.0.0", description = "REST API for quantity measurements with support for multiple unit types"))
 public class QuantityMeasurementAppApplication {
 
-    public static void main(String[] args) {
-        // Bootstrap the Spring application
-        SpringApplication.run(QuantityMeasurementAppApplication.class, args);
-    }
+	public static void main(String[] args) {
+		// Bootstrap the Spring application
+		SpringApplication.run(QuantityMeasurementAppApplication.class, args);
+	}
 }
