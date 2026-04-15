@@ -1,5 +1,6 @@
 package com.app.quantitymeasurement.config;
 
+import com.app.quantitymeasurement.*;
 import com.app.quantitymeasurement.auth.filter.JwtAuthenticationFilter;
 import com.app.quantitymeasurement.auth.handler.OAuth2LoginFailureHandler;
 import com.app.quantitymeasurement.auth.handler.OAuth2LoginSuccessHandler;
@@ -8,6 +9,7 @@ import com.app.quantitymeasurement.auth.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -54,24 +56,53 @@ public class SecurityConfig {
         System.out.println("CustomOAuth2UserService: " + (oAuth2UserService != null ? "REGISTERED" : "NULL"));
     }
 
+    // UPDATED: Added complete API auth endpoints
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/auth/**",
-            "/login/**",
-            "/oauth2/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
-            "/api-docs/**",
-            "/swagger-resources/**",
-            "/webjars/**",
-            "/index.html",
-            "/dashboard.html",
-            "/oauth-callback.html",
-            "/*.html",
-            "/css/**",
-            "/js/**",
-            "/"
+            // Auth endpoints - CRITICAL for registration/login
+    		 "/auth/**",
+             "/login/**",
+             "/oauth2/**",
+             "/swagger-ui/**",
+             "/swagger-ui.html",
+             "/v3/api-docs/**",
+             "/api-docs/**",
+             "/swagger-resources/**",
+             "/webjars/**",
+             "/index.html",
+             "/dashboard.html",
+             "/oauth-callback.html",
+             "/*.html",
+             "/css/**",
+             "/js/**",
+             "/"
     };
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/**")
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        // Public API endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        // Protected API endpoints
+                        .requestMatchers("/api/v1/quantities/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .oauth2Login(oauth2 -> oauth2.disable())  // Disable OAuth2 for API
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -94,19 +125,11 @@ public class SecurityConfig {
                 )
 
                 // Configure OAuth2 login
-                
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> {
                             log.info("Registering CustomOAuth2UserService...");
                             userInfo.userService(oAuth2UserService);
                         })
-                        
-//                        .oauth2Login(oauth2 -> oauth2
-//                        	    .userInfoEndpoint(userInfo -> userInfo
-//                        	        .userService(customOAuth2UserService);
-//                        	    )
-//                        	)
-//                
                         // After successful authentication, call success handler
                         .successHandler(oAuth2LoginSuccessHandler)
                         // If authentication fails, call failure handler
@@ -145,6 +168,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
+                "http://localhost:5174",    // ← ADD THIS
+                "http://127.0.0.1:5174",  
                 "http://localhost:5175",
                 "http://127.0.0.1:5175",
                 "http://localhost:3000",

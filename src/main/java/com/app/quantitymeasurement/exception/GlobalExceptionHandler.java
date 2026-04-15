@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -78,7 +80,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, WebRequest request) {
-        
+
         ErrorResponse error = new ErrorResponse();
         error.timestamp = LocalDateTime.now();
         error.status = HttpStatus.BAD_REQUEST.value();
@@ -87,6 +89,40 @@ public class GlobalExceptionHandler {
         error.path = request.getDescription(false);
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles authentication failures (invalid credentials).
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
+            BadCredentialsException ex, WebRequest request) {
+
+        ErrorResponse error = new ErrorResponse();
+        error.timestamp = LocalDateTime.now();
+        error.status = HttpStatus.UNAUTHORIZED.value();
+        error.error = "Authentication Failed";
+        error.message = "Invalid email or password";
+        error.path = request.getDescription(false);
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Handles general authentication exceptions.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            AuthenticationException ex, WebRequest request) {
+
+        ErrorResponse error = new ErrorResponse();
+        error.timestamp = LocalDateTime.now();
+        error.status = HttpStatus.UNAUTHORIZED.value();
+        error.error = "Authentication Failed";
+        error.message = ex.getMessage();
+        error.path = request.getDescription(false);
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
     /**

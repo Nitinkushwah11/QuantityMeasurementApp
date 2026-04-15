@@ -152,7 +152,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     //Helper function to build url
         private String buildRedirectUrl(String accessToken, String refreshToken, String email){
              // Redirect to React app OAuth callback handler
-            String baseUrl = "http://localhost:5175/oauth-callback";
+            String baseUrl = "http://localhost:5174/oauth-callback";
 
             //Encodig the url
             String encodedAccessToken = URLEncoder.encode(accessToken,StandardCharsets.UTF_8);
