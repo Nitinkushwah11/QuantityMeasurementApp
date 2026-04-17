@@ -42,6 +42,8 @@ Client → API Gateway → Microservices → Database
 ---
 
 ## 📁 Project Structure
+
+
 microservices/
 ├── api-gateway/
 │ ├── config/
