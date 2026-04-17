@@ -6,6 +6,7 @@ import com.app.quantitymeasurement.auth.dto.RefreshTokenRequest;
 import com.app.quantitymeasurement.auth.dto.RegisterRequest;
 import com.app.quantitymeasurement.auth.entity.RefreshToken;
 import com.app.quantitymeasurement.auth.entity.User;
+import com.app.quantitymeasurement.auth.exception.AuthException;
 import com.app.quantitymeasurement.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,12 +68,12 @@ public class AuthService {
                     )
             );
         } catch (AuthenticationException e) {
-            log.error("Authentication failed for user: {}", request.getEmail());
-            throw new RuntimeException("Invalid email or password");
+            log.warn("Authentication failed for user: {}", request.getEmail());
+            throw new AuthException("Invalid email or password", e);
         }
 
         User user = userRepository.findByEmail(request.getEmail().toLowerCase())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AuthException("Invalid email or password"));
 
         String accessToken = jwtService.generateAccessToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);

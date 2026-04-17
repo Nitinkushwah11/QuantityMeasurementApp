@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.app.quantitymeasurement.auth.exception.AuthException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -103,6 +104,23 @@ public class GlobalExceptionHandler {
         error.status = HttpStatus.UNAUTHORIZED.value();
         error.error = "Authentication Failed";
         error.message = "Invalid email or password";
+        error.path = request.getDescription(false);
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Handles application-level authentication failures.
+     */
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuthException(
+            AuthException ex, WebRequest request) {
+
+        ErrorResponse error = new ErrorResponse();
+        error.timestamp = LocalDateTime.now();
+        error.status = HttpStatus.UNAUTHORIZED.value();
+        error.error = "Authentication Failed";
+        error.message = ex.getMessage();
         error.path = request.getDescription(false);
 
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
