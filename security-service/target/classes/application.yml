@@ -1,0 +1,56 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: security-service
+
+  # MySQL Database
+  datasource:
+    url: jdbc:mysql://localhost:3306/security_db
+    username: root
+    password: Nitin@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # GitHub OAuth2
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: Ov23lioZLBt7TrtwtEMG
+            client-secret: 305296e04d0e5f311be8119177788e7ed48ead69
+            scope: user:email
+
+# JWT Config
+jwt:
+  secret: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+  expiration: 86400000
+
+app:
+  frontend-url: http://localhost:5174
+
+# Eureka Client
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
